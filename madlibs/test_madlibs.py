@@ -2,20 +2,23 @@ import unittest
 import re
 
 def extract(story):
-    vars = re.findall('\(\(.*:.*?\)\)', story)
-    vars = map(lambda x: x.split(':')[0][2:], vars)
+    variables = find_variables(story)
 
     match = re.findall('\(\(.*?\)\)', story)
 
     match = map(lambda x: x[2:-2], match)
     for m in match:
-        for v in vars:
+        for v in variables:
             if m == v:
                 match.remove(m)
 
     match = map(lambda x: x.split(':')[1] if len(x.split(':')) > 1 else x, match)
 
     return match
+
+def find_variables(story):
+    vars = re.findall('\(\(.*:.*?\)\)', story)
+    return map(lambda x: x.split(':')[0][2:], vars)
 
 def replace(placeholders, story):
     for token in placeholders.keys():
