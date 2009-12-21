@@ -2,23 +2,36 @@ import unittest
 import re
 
 def extract(story):
-    variables = find_variables(story)
+    """ extract placeholders from a story"""
+    return find_placeholders(story, find_reusable_variables(story))
 
+def find_reusable_variables(story):
+    """ returns a collection of reusable variables in a story
+    from ((animal: an animal)) it returns ['animal']
+    """
+    vars = re.findall('\(\(.*:.*?\)\)', story)
+    return map(lambda x: x.split(':')[0][2:], vars)
+
+def find_placeholders(story, variables):
+    """ returns a collections of placeholders.
+    from 'Hello ((an animal)), you are ((a color))'
+    it returns ['((an animal))', '((a color))']
+    """
     match = re.findall('\(\(.*?\)\)', story)
+    return remove_variables_from_placeholders(match, variables)
 
+def remove_variables_from_placeholders(match, variables):
+    """ filters out the reusable variables from the placeholders 
+    from ['((animal: an animal))', '((animal))', '((a color))']
+    it returns ['an animal', 'a color']
+    """
     match = map(lambda x: x[2:-2], match)
     for m in match:
         for v in variables:
             if m == v:
                 match.remove(m)
 
-    match = map(lambda x: x.split(':')[1] if len(x.split(':')) > 1 else x, match)
-
-    return match
-
-def find_variables(story):
-    vars = re.findall('\(\(.*:.*?\)\)', story)
-    return map(lambda x: x.split(':')[0][2:], vars)
+    return  map(lambda x: x.split(':')[1] if len(x.split(':')) > 1 else x, match)
 
 def replace(placeholders, story):
     for token in placeholders.keys():
