@@ -38,11 +38,9 @@ class MadLibs(object):
         """
 
         match = map(lambda x: x[2:-2], match)
-        for m in match:
-            for v in variables:
-                if m == v:
-                    match.remove(m)
 
+        [match.remove(m) if m == v else None for v in variables for m in match]
+        
         return  map(lambda x: x.split(':')[1] if len(x.split(':')) > 1 else x, match)
 
     def replace(self, answers, story):
