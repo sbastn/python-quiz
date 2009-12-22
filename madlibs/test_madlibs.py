@@ -3,7 +3,9 @@ import re
 
 def extract(story):
     """ extract placeholders from a story"""
-    return find_placeholders(story, find_reusable_variables(story))
+    variables = find_reusable_variables(story)
+    placeholders = find_placeholders(story)
+    return remove_variables_from_placeholders(placeholders, variables)
 
 def find_reusable_variables(story):
     """ returns a collection of reusable variables in a story
@@ -12,13 +14,12 @@ def find_reusable_variables(story):
     vars = re.findall('\(\(.*:.*?\)\)', story)
     return map(lambda x: x.split(':')[0][2:], vars)
 
-def find_placeholders(story, variables):
+def find_placeholders(story):
     """ returns a collections of placeholders.
     from 'Hello ((an animal)), you are ((a color))'
     it returns ['((an animal))', '((a color))']
     """
-    match = re.findall('\(\(.*?\)\)', story)
-    return remove_variables_from_placeholders(match, variables)
+    return re.findall('\(\(.*?\)\)', story)
 
 def remove_variables_from_placeholders(match, variables):
     """ filters out the reusable variables from the placeholders 
@@ -33,10 +34,27 @@ def remove_variables_from_placeholders(match, variables):
 
     return  map(lambda x: x.split(':')[1] if len(x.split(':')) > 1 else x, match)
 
-def replace(placeholders, story):
-    for token in placeholders.keys():
-        story = re.sub('\(\(' + token + '\)\)', placeholders[token], story)
+def replace(answers, story):
+    variables = find_reusable_variables(story)
+    placeholders = find_placeholders(story)
 
+    # simple case with no vars
+    for answer in answers.keys():
+        found = False
+        for token in placeholders:
+            if token[2:-2] == answer:
+                found = True
+                story = re.sub('\(\(' + answer + '\)\)', answers[answer], story)
+
+        # search and replace placeholders with vars
+
+        if not found:
+            token_with_vars = filter(lambda x: x if len(x.split(':')) > 1 else None, placeholders)
+            for var_token in token_with_vars:
+                var = re.split(':', var_token)[0][2:]
+                story = re.sub('\(\(' + var + '\)\)', answers[answer], story)
+                story = re.sub('\(\(' + var_token + '\)\)', answers[answer], story)
+                
     return story
 
 class TestMadLibs(unittest.TestCase):
@@ -52,7 +70,11 @@ class TestMadLibs(unittest.TestCase):
         self.assertEquals(expected_story, replace(placeholders, self.story))
 
     def test_extract_reusable_variables_from_story(self):
-        story = "Our favorite language is ((animal:an animal)). We think ((animal)) is better than ((an animal))."
-        self.assertEquals(['an animal', 'an animal'], extract(story))
+        story = "Our favorite animal is ((animal:an animal)). We think ((animal)) is better than ((another animal))."
+        self.assertEquals(['an animal', 'another animal'], extract(story))
         
-
+    def test_feed_answers_to_story_with_reusable_variables(self):
+        story = "Our favorite animal is a ((animal:an animal)). We think a ((animal)) is better than a ((another animal))."
+        placeholders = {'an animal': 'python', 'another animal': 'unicorn'}
+        expected_story = "Our favorite animal is a python. We think a python is better than a unicorn."
+        self.assertEquals(expected_story, replace(placeholders, story))
