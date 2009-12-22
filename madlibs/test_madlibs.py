@@ -47,7 +47,6 @@ def replace(answers, story):
                 story = re.sub('\(\(' + answer + '\)\)', answers[answer], story)
 
         # search and replace placeholders with vars
-
         if not found:
             token_with_vars = filter(lambda x: x if len(x.split(':')) > 1 else None, placeholders)
             for var_token in token_with_vars:
