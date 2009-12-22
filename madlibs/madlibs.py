@@ -62,3 +62,17 @@ class MadLibs(object):
                 story = re.sub('\(\(' + var_token + '\)\)', answers[answer], story)
                 
         return story
+
+
+if __name__ == '__main__':
+    story = raw_input('Enter a story: ')
+    m = MadLibs(story)
+
+    if len(m.questions) == 0:
+        print 'next time, try to enter placeholders like ((this example))'
+
+    answers = {}
+    for q in m.questions:
+        answers[q] = raw_input('Enter %s: ' % q)
+
+    print m.tell_story(answers)
