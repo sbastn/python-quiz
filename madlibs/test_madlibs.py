@@ -1,7 +1,6 @@
 import unittest
 from madlibs import MadLibs
 
-
 class TestSimplePlaceholders(unittest.TestCase):
 
     def setUp(self):
