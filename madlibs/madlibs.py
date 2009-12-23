@@ -1,11 +1,15 @@
+""" madlibs translation """
 import re
 
 class MadLibs(object):
+    """ given text with ((templates)), we translate it """
+
     def __init__(self, story):
         self.story = story
-        self.questions = self.extract(story)
+        self.questions = self.extract(self.story)
         
     def tell_story(self, answers):
+        """ tells the story back with when all the placeholders are answered """
         return self.replace(answers, self.story)
 
     def extract(self, story):
@@ -13,17 +17,19 @@ class MadLibs(object):
 
         variables = self.find_reusable_variables(story)
         placeholders = self.find_placeholders(story)
-        return self.remove_variables_from_placeholders(placeholders, variables)
+        return self.filter_variables(placeholders, variables)
 
-    def find_reusable_variables(self, story):
+    @staticmethod
+    def find_reusable_variables(story):
         """ returns a collection of reusable variables in a story
         from ((animal: an animal)) it returns ['animal']
         """
 
-        vars = re.findall('\(\(.*:.*?\)\)', story)
-        return map(lambda x: x.split(':')[0][2:], vars)
+        return map(lambda x: x.split(':')[0][2:], \
+                       re.findall('\(\(.*:.*?\)\)', story))
 
-    def find_placeholders(self, story):
+    @staticmethod
+    def find_placeholders(story):
         """ returns a collections of placeholders.
         from 'Hello ((an animal)), you are ((a color))'
         it returns ['((an animal))', '((a color))']
@@ -31,7 +37,8 @@ class MadLibs(object):
 
         return re.findall('\(\(.*?\)\)', story)
 
-    def remove_variables_from_placeholders(self, match, variables):
+    @staticmethod
+    def filter_variables(match, variables):
         """ filters out the reusable variables from the placeholders 
         from ['((animal: an animal))', '((animal))', '((a color))']
         it returns ['an animal', 'a color']
@@ -41,7 +48,8 @@ class MadLibs(object):
 
         [match.remove(m) if m == v else None for v in variables for m in match]
         
-        return  map(lambda x: x.split(':')[1] if len(x.split(':')) > 1 else x, match)
+        return  map(lambda x: x.split(':')[1] \
+                        if len(x.split(':')) > 1 else x, match)
 
     def replace(self, answers, story):
         """ replaces the placeholders inside the story """
@@ -53,38 +61,44 @@ class MadLibs(object):
                 
         return story
 
-    def replace_simple_placeholders(self, story, answers, placeholders):
+    @staticmethod
+    def replace_simple_placeholders(story, answers, placeholders):
         """ replace ((a placeholders)) inside the story """
 
         for answer in answers.keys():
             for token in placeholders:
                 if token[2:-2] == answer:
-                    story = re.sub('\(\(' + answer + '\)\)', answers[answer], story)
+                    story = re.sub('\(\(' + answer + '\)\)', \
+                                       answers[answer], story)
 
         return story
 
-    def replace_variable_placeholders(self, story, answers, placeholders):
+    @staticmethod
+    def replace_variable_placeholders(story, answers, placeholders):
         """ replace ((var: a variable)) inside the story """
 
-        token_with_vars = filter(lambda x: x if len(x.split(':')) > 1 else None, placeholders)
+        token_with_vars = filter(lambda x: x \
+                                     if len(x.split(':')) > 1 else None,\
+                                     placeholders)
 
         for var_token in token_with_vars:
             var = re.split(':', var_token)[0][2:]
             placeholder = re.split(':', var_token)[1][:-2]
             story = re.sub('\(\(' + var + '\)\)', answers[placeholder], story)
-            story = re.sub('\(\(' + var_token + '\)\)', answers[placeholder], story)
+            story = re.sub('\(\(' + var_token + '\)\)', \
+                               answers[placeholder], story)
 
         return story
 
 if __name__ == '__main__':
-    story = raw_input('Enter a story: ')
-    m = MadLibs(story)
+    the_story = raw_input('Enter a story: ')
+    madlibs = MadLibs(the_story)
 
-    if len(m.questions) == 0:
+    if len(madlibs.questions) == 0:
         print 'next time, try to enter placeholders like ((this example))'
 
-    answers = {}
-    for q in m.questions:
-        answers[q] = raw_input('Enter %s: ' % q)
+    the_answers = {}
+    for q in madlibs.questions:
+        the_answers[q] = raw_input('Enter %s: ' % q)
 
-    print m.tell_story(answers)
+    print madlibs.tell_story(the_answers)
