@@ -13,14 +13,14 @@ numbers = {
 }
 
 def lcd(n):
-    num = ' ' + numbers[n][0] + '\n'
-    num += numbers[n][1] + ' ' + numbers[n][2] + '\n'
-    num += ' ' + numbers[n][3] + '\n'
-    num += numbers[n][4] + ' ' + numbers[n][5] + '\n'
-    num += ' ' + numbers[n][6]
+    num = ' %s\n' % numbers[n][0]
+    num += '%s %s\n' % (numbers[n][1], numbers[n][2])
+    num += ' %s\n' % numbers[n][3]
+    num += '%s %s\n' % (numbers[n][4], numbers[n][5])
+    num += ' %s' % numbers[n][6]
     return num
 
-class TestLCDWithSingleNumber(unittest.TestCase):
+class TestLCDWithSingleNumberSingleSize(unittest.TestCase):
     def test_display_zero(self):
         expected_result = TEMPLATE % (DASH, PIPE, PIPE, SPACE, PIPE, PIPE, DASH)
         self.assertEquals(expected_result, lcd(0))
