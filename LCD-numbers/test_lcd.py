@@ -3,7 +3,7 @@ import unittest
 SPACE = ' '
 PIPE  = '|'
 DASH  = '-'
-TEMPLATE = ' %s\n%s %s\n %s\n%s %s\n %s'
+TEMPLATE = ' %s\n%s %s\n %s\n%s %s\n %s\n'
 
 numbers = {
     0: [DASH, PIPE, PIPE, SPACE, PIPE, PIPE, DASH],
@@ -13,11 +13,20 @@ numbers = {
 }
 
 def lcd(n):
-    num = ' %s\n' % numbers[n][0]
-    num += '%s %s\n' % (numbers[n][1], numbers[n][2])
-    num += ' %s\n' % numbers[n][3]
-    num += '%s %s\n' % (numbers[n][4], numbers[n][5])
-    num += ' %s' % numbers[n][6]
+    num =  '%s\n' % display(n, section=[0])
+    num += '%s\n' % display(n, section=[1, 2])
+    num += '%s\n' % display(n, section=[3])
+    num += '%s\n' % display(n, section=[4, 5])
+    num += '%s\n' % display(n, section=[6])
+    return num
+
+def display(n, section):
+    num = ''
+    for s in section:
+        if s in [1, 4]:
+            num += '%s' % numbers[n][s]
+        else:
+            num += ' %s' % numbers[n][s]
     return num
 
 class TestLCDWithSingleNumberSingleSize(unittest.TestCase):
@@ -37,6 +46,9 @@ class TestLCDWithSingleNumberSingleSize(unittest.TestCase):
         expected_result = TEMPLATE % (DASH, SPACE, PIPE, DASH, SPACE, PIPE, DASH)
         self.assertEquals(expected_result, lcd(3))
         
+class TestLCDWithMultipleNumbersSingleSize(unittest.TestCase):
+    def test_display_zero_and_one(self):
+        pass
 
 if __name__ == '__main__':
     print lcd(2)
